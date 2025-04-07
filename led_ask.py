@@ -3,7 +3,7 @@ import time
 
 LED_PIN = 18        # Pin for LED output
 ASCII_BITS = 8
-START_SIGNAL_DURATION = 1
+START_SIGNAL_DURATION = 5
 BIT_INTERVAL = 0.2
 CHAR_INTERVAL = 1
 TEXT = "HelloWorld"

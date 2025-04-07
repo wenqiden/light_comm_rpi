@@ -1,14 +1,16 @@
 import RPi.GPIO as GPIO
 import time
 
-SENSOR_PIN = 23  # PIN for light sensor
+SENSOR_HIGH_PIN = 23  # PIN for light sensor
+SENSOR_LOW_PIN = 27
 ASCII_BITS = 8
 START_SIGNAL_DURATION = 5
 BIT_INTERVAL = 0.2
 CHAR_INTERVAL = 1
 
 GPIO.setmode(GPIO.BCM)
-GPIO.setup(SENSOR_PIN, GPIO.IN)
+GPIO.setup(SENSOR_HIGH_PIN, GPIO.IN)
+GPIO.setup(SENSOR_LOW_PIN, GPIO.IN)
 
 def binary_to_string(binary_text):
     """Convert binary string (8-bit per char, no spaces) back to text."""
@@ -16,9 +18,9 @@ def binary_to_string(binary_text):
 
 def wait_for_start_signal():
     while True:
-        if GPIO.input(SENSOR_PIN) == GPIO.HIGH:
+        if GPIO.input(SENSOR_HIGH_PIN) == GPIO.HIGH and GPIO.input(SENSOR_LOW_PIN) == GPIO.HIGH:
             start_time = time.time()
-            while GPIO.input(SENSOR_PIN) == GPIO.HIGH:
+            while GPIO.input(SENSOR_HIGH_PIN) == GPIO.HIGH and GPIO.input(SENSOR_LOW_PIN) == GPIO.HIGH:
                 if time.time() - start_time >= START_SIGNAL_DURATION * 0.8:
                     print("Start signal detected! Synchronizing...")
                     time.sleep(BIT_INTERVAL)
@@ -30,11 +32,21 @@ def receive_binary(bit_delay=BIT_INTERVAL):
     """Read binary data using light sensor."""
     received_bits = ''
     for _ in range(ASCII_BITS):
-        bit = '1' if GPIO.input(SENSOR_PIN) == GPIO.HIGH else '0'
+        if GPIO.input(SENSOR_HIGH_PIN) == GPIO.HIGH and GPIO.input(SENSOR_LOW_PIN) == GPIO.LOW:
+            bit = '1'
+        elif GPIO.input(SENSOR_HIGH_PIN) == GPIO.LOW and GPIO.input(SENSOR_LOW_PIN) == GPIO.HIGH:
+            bit = '0'
+        else:
+            print("Warning: Ambiguous signal detected, assuming '0'")
+            bit = '0'
         received_bits += bit
         time.sleep(bit_delay)  # Wait for next bit
     print("Received:", received_bits, "=>", binary_to_string(received_bits))
-    time.sleep(CHAR_INTERVAL)
+    # time.sleep(CHAR_INTERVAL)
+    # might be safer than time.sleep(CHAR_INTERVAL)?
+    while GPIO.input(SENSOR_HIGH_PIN) == GPIO.LOW and GPIO.input(SENSOR_LOW_PIN) == GPIO.LOW:
+        time.sleep(0.01)
+
 
 if __name__ == '__main__':
     print("Receiving data...")
