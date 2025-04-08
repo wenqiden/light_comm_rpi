@@ -5,7 +5,7 @@ LED_LOW_PIN = 18
 LED_HIGH_PIN = 12
 ASCII_BITS = 8
 START_SIGNAL_DURATION = 5
-BIT_INTERVAL = 0.2
+BIT_DELAY = 0.2
 CHAR_INTERVAL = 1
 TEXT = "HelloWorld"
 
@@ -24,7 +24,7 @@ def transmit_start_signal():
     GPIO.output(LED_HIGH_PIN, GPIO.LOW)
     time.sleep(CHAR_INTERVAL)
 
-def transmit_binary(binary_text, bit_delay=BIT_INTERVAL):
+def transmit_binary(binary_text):
     """Flash LED to transmit binary data."""
     print("Transmitting:", binary_text)
     for bit in binary_text:
@@ -34,7 +34,7 @@ def transmit_binary(binary_text, bit_delay=BIT_INTERVAL):
         else:
             GPIO.output(LED_LOW_PIN, GPIO.HIGH)
             GPIO.output(LED_HIGH_PIN, GPIO.LOW)
-        time.sleep(bit_delay)
+        time.sleep(BIT_DELAY)
     GPIO.output(LED_HIGH_PIN, GPIO.LOW)
     GPIO.output(LED_LOW_PIN, GPIO.LOW)
     time.sleep(CHAR_INTERVAL)
@@ -42,6 +42,7 @@ def transmit_binary(binary_text, bit_delay=BIT_INTERVAL):
 if __name__ == '__main__':
     try:
         binary_text_list = string_to_binary(TEXT)
+        transmit_start_signal()
         for binary_text in binary_text_list:
             transmit_binary(binary_text)
     finally:

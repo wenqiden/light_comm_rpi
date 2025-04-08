@@ -5,7 +5,7 @@ SENSOR_HIGH_PIN = 23  # PIN for light sensor
 SENSOR_LOW_PIN = 27
 ASCII_BITS = 8
 START_SIGNAL_DURATION = 5
-BIT_INTERVAL = 0.2
+BIT_DELAY = 0.2
 CHAR_INTERVAL = 1
 
 GPIO.setmode(GPIO.BCM)
@@ -23,12 +23,12 @@ def wait_for_start_signal():
             while GPIO.input(SENSOR_HIGH_PIN) == GPIO.HIGH and GPIO.input(SENSOR_LOW_PIN) == GPIO.HIGH:
                 if time.time() - start_time >= START_SIGNAL_DURATION * 0.8:
                     print("Start signal detected! Synchronizing...")
-                    time.sleep(BIT_INTERVAL)
+                    time.sleep(BIT_DELAY)
                     return
                 time.sleep(0.01)
         time.sleep(0.01)
 
-def receive_binary(bit_delay=BIT_INTERVAL):
+def receive_binary(bit_delay=BIT_DELAY):
     """Read binary data using light sensor."""
     received_bits = ''
     for _ in range(ASCII_BITS):
@@ -51,8 +51,8 @@ def receive_binary(bit_delay=BIT_INTERVAL):
 if __name__ == '__main__':
     print("Receiving data...")
     try:
+        wait_for_start_signal()
         while True:
-            wait_for_start_signal()
             receive_binary()
     finally:
         GPIO.cleanup()
