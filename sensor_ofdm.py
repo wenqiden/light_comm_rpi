@@ -44,8 +44,8 @@ def receive_binary(bit_delay=BIT_DELAY):
 if __name__ == '__main__':
     print("Receiving data...")
     try:
+        wait_for_start_signal()
         while True:
-            wait_for_start_signal()
             receive_binary()
     finally:
         GPIO.cleanup()
